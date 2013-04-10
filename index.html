@@ -45,7 +45,8 @@ node /test\d\d.test.com/ {
 			<section>
 				<h2>Resources</h1>
 				<p>The building blocks of a system</p>
-				<p>Defined in Ruby or in the Puppet Language</p>
+				<p>Defined in Ruby</p>
+				<p>Consist of a generic type and a specific provider</p>
 			</section>
 			<section>
 				<h2>Examples</h2>
@@ -66,18 +67,130 @@ package{['tmux','tcpdump']:
 		</section>
 
 		<!-- Language -->
+		
+		<section>
+			<h2>Variables</h2>
+			<p>Consist of a bareword preceded by a $</p>
+			<p>Example: <code>$var</code></p>
+			<p>Can be defined in a manifest or autopopulated as facts</p>
+			<p>Immutable once defined</p>
+		</section>
 		<section>
 			<section>
 				<h2>Data Types</h2>
 			</section>
 			<section>
-				<h2>Variables</h2>
+				<h2>Booleans</h2>
 				<pre><code>
-$service_name = 'httpd'
+true
+false
+				</code></pre>
+			</section>
+			<section>
+				<h2>Strings</h2>
+				<pre><code>
+'Hello there'
+"Hello there ${var}"
+				</code></pre>
+			</section>
+			<section>
+				<h2>Numbers</h2>
+				<pre><code>
+8
+8.2
+				</code></pre>
+			</section>
+			<section>
+				<h2>Arrays</h2>
+				<pre><code>
+['one','two','three']
+--
+$foo = ['one','two','three']
+$foo[0] #'one'
+				</code></pre>
+			</section>
+			<section>
+			<h2>Hashes</h2>
+				<pre><code>
+{'one' => 'two', 'three' => 'four'}
+--
+$foo = {'one' => 'two', 'three' => 'four'}
+$foo['one'] # 'two'
+				</code></pre>
+			</section>
+			<section>
+				<h2>Resource Reference</h2>
+				<p>A pointer to a resource mostly used for ordering</p>
+				<pre><code>
+File['/tmp/foo']
+Package['httpd']
 				</code></pre>
 			</section>
 		</section>
 
+<!-- Operators -->
+		<section>
+			<h2>Operators</h2>
+			<ul>
+			<li>Comparison</li>
+			<li>Arithmetic</li>
+			<li>Boolean</li>
+			</li>
+		</section>
+
+<!-- Conditionals -->
+		<section>
+			<section>
+				<h2>Conditional Statements</h2>
+			</section>
+			<section>
+				<h2>if</h2>
+				<pre><code>
+if $foo == 'bar' {
+
+} elsif 5 > 3 {
+
+} else {
+
+}
+				</code></pre>
+			</section>
+			<section>
+				<h2>unless</h2>
+				<p>New in 3.0</p>
+				<pre><code>
+unless $mem > 1024 {
+
+}
+				</code></pre>
+			</section>
+			<section>
+				<h2>Case Statement</h2>
+				<pre><code>
+case $operatingsystem {
+	'Solaris':          { } 
+	'RedHat', 'CentOS': { }
+	default:            { }
+}
+				</code></pre>
+			</section>
+			<section>
+				<h2>Selector</h2>
+				<pre><code>
+$rootgroup = $osfamily ? {
+	'Solaris'          => 'wheel',
+	/(Darwin|FreeBSD)/ => 'wheel',
+	default            => 'root',
+}
+				</code></pre>
+			</section>
+		</section>
+		<!-- Functions -->
+		<section>
+			<h2>Functions</h2>
+			<p>Can return values and/or have side effects</p>
+			<p>Defined in Ruby and new ones can be added</p>
+		</section>
 		<!-- Classes -->
 		<section>
 			<section>
@@ -93,8 +206,114 @@ class bar (
 	$ensure,
 	$baz = 'trunk'
 ) { }
+
+--
+
+include foo
+
+class{'bar':
+	ensure => 'present',
+	baz    => 'bar',
+}
 				</code></pre>
 			</section>
+		</section>
+
+		<!-- Defines -->
+		<section>
+			<section>
+				<h2>Defined Types</h2>
+				<p>Resources defined in the Puppet DSL</p>
+			</section>
+		<section>
+				<h2>Example</h2>
+				<pre><code>
+define foo (
+	$uid
+) {
+	file{"/tmp/foo_${title}":
+		ensure => 'file',
+		owner  => $uid,
+	}
+	file{"/tmp/bar_${title}":
+		ensure => 'file',
+		owner  => $uid,
+	}
+}
+
+--
+
+foo{'test1': uid => 'bar'}
+				</code></pre>
+		</section>
+		</section>
+
+		<!-- Ordering	-->
+		<section>
+			<section>
+				<h2>Resource Ordering</h2>
+				<p>The order that non defined unless it is specified</p>
+				<p>There are two ways to specify order<p>
+				<ol>
+					<li>Meta parameters</li>
+					<li>Chaining</li>
+				</ol>
+			</section>
+			<section>
+				<h2>Meta Parameters</h2>
+				<p>Available on classes,defined types,resources</p>
+				<ul>
+					<li>requires</li>
+					<li>before</li>
+					<li>notify</li>
+					<li>subscribe</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Chaining</h2>
+				<p>Define order using resource references</p>
+				<ul>
+					<li> A -> B # A before B</li>
+					<li> A ~> B # A notifies B</li>
+				</ul>
+			</section>
+		</section>
+
+		<!-- Modules -->
+		<section>
+			<h2>Modules</h2>
+			<p>Collection and namespacing mechanism that can contain</p>
+			<ul>
+				<li>Classes</li>
+				<li>Defined Types</li>
+				<li>Templates</li>
+				<li>Files</li>
+				<li>Templates</li>
+				<li>Function Definitions</li>
+				<li>Fact Definitions</li>
+				<li>Resource Definitions</li>
+			</ul>
+		</section>
+
+		<!-- Puppet Run -->
+		<section>
+			<h2>Anatomy of a puppet run</h2>
+			<ol>
+				<li>Client connects to puppetmaster and sends facts</li>
+				<li>Puppetmaster combines node definition and facts to generate catalog</li>
+				<li>Puppetmaster sends catalog to client</li>
+				<li>Client runs catalog to converge configuration</li>
+				<li>Optionally client sends report to a report processor</li>
+			</ol>
+		</section>
+		<section>
+			<h2>Resources</h2>
+			<ul>
+				<li><a href=http://docs.puppetlabs.com/puppet/>Puppetlabs docs</a></li>
+				<li><a href=https://puppetlabs.com/blog/>Puppetlabs blog</a></li>
+				<li><a href=https://groups.google.com/forum/?fromgroups#!forum/puppet-users>Puppet Users Google Group</a></li>
+				<li><a href=http://www.planetpuppet.org/>Planet Puppet</a></li>
+			</ul>
 		</section>
 		</div>
 	</div>
@@ -109,6 +328,10 @@ Reveal.initialize({
 	progress: true,
 	history: true,
 	center: true,
+	dependencies: [
+		{ src: 'reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+		{ src: 'reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+	]
 });
 </script>
 </body>
